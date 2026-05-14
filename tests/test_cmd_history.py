@@ -36,6 +36,22 @@ class TestAddHistorySubparser:
         args = parser.parse_args(["history", "clear"])
         assert args.history_cmd == "clear"
 
+    def test_list_is_default_subcommand(self):
+        """Verify that 'list' is the default sub-command when none is given."""
+        parser = argparse.ArgumentParser()
+        sub = parser.add_subparsers(dest="cmd")
+        add_history_subparser(sub)
+        args = parser.parse_args(["history", "list"])
+        assert args.history_cmd == "list"
+
+    def test_default_limit_is_ten(self):
+        """Verify that the default value for -n/--limit is 10."""
+        parser = argparse.ArgumentParser()
+        sub = parser.add_subparsers(dest="cmd")
+        add_history_subparser(sub)
+        args = parser.parse_args(["history", "list"])
+        assert args.limit == 10
+
 
 class TestCmdHistoryList:
     def test_empty_history_prints_message(self, hist_file, capsys):
@@ -70,3 +86,11 @@ class TestCmdHistoryClear:
         captured = capsys.readouterr()
         assert "3" in captured.out
         mock_clear.assert_called_once()
+
+    def test_clear_zero_entries_prints_zero(self, capsys):
+        """Verify output when there are no entries to clear."""
+        with patch("crontab_gen.cmd_history.clear_history", return_value=0):
+            result = cmd_history(_make_args(history_cmd="clear"))
+        assert result == 0
+        captured = capsys.readouterr()
+        assert "0" in captured.out
