@@ -52,3 +52,14 @@ class TestFavoriteIntegration:
         add_favorite("0 0 1 1 *", label="New Year", path=fav_file)
         entries = list_favorites(path=fav_file)
         assert entries[0].label == "New Year"
+
+    def test_duplicate_expression_not_added_twice(self, fav_file):
+        """Adding the same expression twice should not create duplicate entries."""
+        expr = "0 12 * * *"
+        add_favorite(expr, path=fav_file)
+        add_favorite(expr, path=fav_file)
+        entries = list_favorites(path=fav_file)
+        matching = [e for e in entries if e.expression == expr]
+        assert len(matching) == 1, (
+            f"Expected 1 entry for '{expr}', found {len(matching)}"
+        )
