@@ -33,6 +33,15 @@ def add_group_subparser(subparsers: argparse._SubParsersAction) -> None:  # type
     p.set_defaults(func=cmd_group)
 
 
+def _require_group(name: str) -> object:
+    """Look up a group by name, printing an error and exiting if not found."""
+    entry = get_group(name)
+    if entry is None:
+        print(f"No group named '{name}' found.", file=sys.stderr)
+        sys.exit(1)
+    return entry
+
+
 def cmd_group(args: argparse.Namespace) -> None:
     if args.group_cmd == "add":
         invalid = [e for e in args.expressions if not is_valid(e)]
@@ -60,10 +69,7 @@ def cmd_group(args: argparse.Namespace) -> None:
             print(f"{g.name} ({len(g.expressions)} expression(s)){desc}")
 
     elif args.group_cmd == "show":
-        entry = get_group(args.name)
-        if entry is None:
-            print(f"No group named '{args.name}' found.", file=sys.stderr)
-            sys.exit(1)
+        entry = _require_group(args.name)
         if entry.description:
             print(f"Group: {entry.name} — {entry.description}")
         else:
