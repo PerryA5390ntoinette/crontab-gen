@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from .expression import is_valid
 from .explainer import explain
@@ -66,3 +66,22 @@ def suggest_retry_policies(
                 )
             )
     return results
+
+
+def closest_retry_policy(target_minutes: int) -> Optional[RetryPolicy]:
+    """Return the built-in retry policy whose interval is closest to *target_minutes*.
+
+    If *target_minutes* is less than 1, a ``ValueError`` is raised.  Returns
+    ``None`` only when ``_BUILTIN_POLICIES`` is empty (should not happen in
+    normal usage).
+    """
+    if target_minutes < 1:
+        raise ValueError("target_minutes must be >= 1")
+
+    all_policies = suggest_retry_policies(
+        min_interval_minutes=1, max_interval_minutes=1440
+    )
+    if not all_policies:
+        return None
+
+    return min(all_policies, key=lambda p: abs(p.interval_minutes - target_minutes))
