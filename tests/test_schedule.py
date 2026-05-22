@@ -14,11 +14,23 @@ class TestScheduleSummary:
         s = ScheduleSummary("0 * * * *", "Every hour at minute 0")
         assert s.expression == "0 * * * *"
 
+    def test_summary_attribute(self):
+        s = ScheduleSummary("0 * * * *", "Every hour at minute 0")
+        assert s.summary == "Every hour at minute 0"
+
 
 class TestSummarise:
     def test_invalid_expression_raises(self):
         with pytest.raises(ValueError, match="Invalid cron expression"):
             summarise("not valid")
+
+    def test_invalid_expression_too_few_fields(self):
+        with pytest.raises(ValueError, match="Invalid cron expression"):
+            summarise("* * *")
+
+    def test_invalid_expression_too_many_fields(self):
+        with pytest.raises(ValueError, match="Invalid cron expression"):
+            summarise("* * * * * *")
 
     def test_every_minute(self):
         result = summarise("* * * * *")
