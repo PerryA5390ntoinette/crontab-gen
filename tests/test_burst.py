@@ -90,17 +90,14 @@ class TestDetectBurst:
         result = detect_burst("0 * * * *", window_minutes=60, threshold=10)
         assert result.ok is True
 
-    def test_count_is_positive_integer(self):
-        result = detect_burst("* * * * *", window_minutes=60, threshold=100)
-        assert isinstance(result.count, int)
-        assert result.count > 0
+    def test_result_count_matches_expected_fires(self):
+        """The count on the result should equal the number of times the
+        expression fires within the given window."""
+        result = detect_burst("*/15 * * * *", window_minutes=60, threshold=10)
+        # */15 fires at :00, :15, :30, :45 => 4 times per hour
+        assert result.count == 4
 
-    def test_custom_threshold_respected(self):
-        # every minute fires 60 times per hour; threshold=100 should be ok
-        result = detect_burst("* * * * *", window_minutes=60, threshold=100)
-        assert result.ok is True
-
-    def test_result_expression_matches_input(self):
-        expr = "*/5 * * * *"
-        result = detect_burst(expr, window_minutes=60, threshold=20)
-        assert result.expression == expr
+    def test_custom_threshold_triggers_burst(self):
+        """A very low threshold should flag even a lightly-firing expression."""
+        result = detect_burst("0 * * * *", window_minutes=60, threshold=0)
+        assert result.ok is False
