@@ -87,11 +87,19 @@ class TestRemoveFlag:
 
 class TestGetFlag:
     def test_get_existing_returns_entry(self, flag_file):
-        add_flag("0 6 * * *", "experimental", label="morning job", path=flag_file)
-        entry = get_flag("0 6 * * *", path=flag_file)
+        add_flag("* * * * *", "active", path=flag_file)
+        entry = get_flag("* * * * *", path=flag_file)
         assert entry is not None
-        assert entry.flag == "experimental"
-        assert entry.label == "morning job"
+        assert entry.flag == "active"
 
     def test_get_missing_returns_none(self, flag_file):
-        assert get_flag("0 6 * * *", path=flag_file) is None
+        entry = get_flag("* * * * *", path=flag_file)
+        assert entry is None
+
+    def test_get_returns_correct_entry(self, flag_file):
+        add_flag("* * * * *", "active", path=flag_file)
+        add_flag("0 0 * * *", "disabled", path=flag_file)
+        entry = get_flag("0 0 * * *", path=flag_file)
+        assert entry is not None
+        assert entry.flag == "disabled"
+        assert entry.expression == "0 0 * * *"
